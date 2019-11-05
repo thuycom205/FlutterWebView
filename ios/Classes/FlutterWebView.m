@@ -2,6 +2,7 @@
 
 @implementation FlutterNativeWebFactory {
   NSObject<FlutterBinaryMessenger>* _messenger;
+  FlutterEventSink _eventSink;
 }
 
 - (instancetype)initWithMessenger:(NSObject<FlutterBinaryMessenger>*)messenger {
@@ -42,6 +43,8 @@
   if ([super init]) {
     _viewId = viewId;
     _webView = [[WKWebView alloc] initWithFrame:frame];
+
+    _webView.navigationDelegate = self;
     NSString* channelName = [NSString stringWithFormat:@"ponnamkarthik/flutterwebview_%lld", viewId];
     _channel = [FlutterMethodChannel methodChannelWithName:channelName binaryMessenger:messenger];
     __weak __typeof__(self) weakSelf = self;
@@ -49,10 +52,31 @@
       [weakSelf onMethodCall:call result:result];
     }];
 
+    NSString* pageFinishedChannelName = [NSString stringWithFormat:@"ponnamkarthik/flutterwebview_stream_pagefinish_%lld", viewId];
+
+    FlutterEventChannel finishedChannel = [FlutterEventChannel
+	            eventChannelWithName:@"pageFinishedChannelName"
+		                 binaryMessenger:controller];
+        [finishedChannel setStreamHandler:self];
+
   }
   return self;
 }
 
+- (void)webView:(WKWebView *)webView didFinishNavigation:(WKNavigation *)navigation{
+	    _eventSink(@"loading page sucess");
+}
+- (FlutterError*)onListenWithArguments:(id)arguments
+                             eventSink:(FlutterEventSink)eventSink {
+				       _eventSink = eventSink;
+				         return nil;
+			     }
+
+- (FlutterError*)onCancelWithArguments:(id)arguments {
+	  [[NSNotificationCenter defaultCenter] removeObserver:self];
+	    _eventSink = nil;
+	      return nil;
+}
 - (UIView*)view {
   return _webView;
 }
