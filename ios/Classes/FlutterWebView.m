@@ -34,6 +34,8 @@
   WKWebView* _webView;
   int64_t _viewId;
   FlutterMethodChannel* _channel;
+  FlutterEventSink _eventSink;
+
 }
 
 - (instancetype)initWithWithFrame:(CGRect)frame
