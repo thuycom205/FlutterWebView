@@ -3,7 +3,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface FlutterNativeWebController : NSObject <FlutterPlatformView>
+@interface FlutterNativeWebController : NSObject <FlutterPlatformView,FlutterStreamHandler,WKNavigationDelegate>
 
 - (instancetype)initWithWithFrame:(CGRect)frame
                    viewIdentifier:(int64_t)viewId
@@ -16,5 +16,6 @@ NS_ASSUME_NONNULL_BEGIN
 @interface FlutterNativeWebFactory : NSObject <FlutterPlatformViewFactory>
 - (instancetype)initWithMessenger:(NSObject<FlutterBinaryMessenger>*)messenger;
 @end
-
+@interface SecondStreamHandler : NSObject <FlutterStreamHandler>
+@end
 NS_ASSUME_NONNULL_END

@@ -1,8 +1,8 @@
 #import "FlutterWebView.h"
+FlutterEventSink eventSinkSecond;
 
 @implementation FlutterNativeWebFactory {
   NSObject<FlutterBinaryMessenger>* _messenger;
-  FlutterEventSink _eventSink;
 }
 
 - (instancetype)initWithMessenger:(NSObject<FlutterBinaryMessenger>*)messenger {
@@ -35,6 +35,8 @@
   int64_t _viewId;
   FlutterMethodChannel* _channel;
   FlutterEventSink _eventSink;
+  NSTimer* timer;
+
 
 }
 
@@ -46,38 +48,69 @@
     _viewId = viewId;
     _webView = [[WKWebView alloc] initWithFrame:frame];
 
-    _webView.navigationDelegate = self;
+    __weak __typeof__(self) weakSelf = self;
+    _webView.navigationDelegate = weakSelf;
     NSString* channelName = [NSString stringWithFormat:@"ponnamkarthik/flutterwebview_%lld", viewId];
     _channel = [FlutterMethodChannel methodChannelWithName:channelName binaryMessenger:messenger];
-    __weak __typeof__(self) weakSelf = self;
     [_channel setMethodCallHandler:^(FlutterMethodCall* call, FlutterResult result) {
       [weakSelf onMethodCall:call result:result];
     }];
 
     NSString* pageFinishedChannelName = [NSString stringWithFormat:@"ponnamkarthik/flutterwebview_stream_pagefinish_%lld", viewId];
 
-    FlutterEventChannel finishedChannel = [FlutterEventChannel
-	            eventChannelWithName:@"pageFinishedChannelName"
-		                 binaryMessenger:controller];
+    FlutterEventChannel* finishedChannel = [FlutterEventChannel
+              eventChannelWithName:pageFinishedChannelName
+                     binaryMessenger:messenger];
         [finishedChannel setStreamHandler:self];
+      
+      NSString* pageSuccessChannelName = [NSString stringWithFormat:@"ponnamkarthik/my_second_event_channel_%lld",viewId];
+     
+      SecondStreamHandler* secondStreamHandler =
+             [[SecondStreamHandler alloc] init];
+      
+         FlutterEventChannel* secondEventChannel =
+             [FlutterEventChannel eventChannelWithName:pageSuccessChannelName
+                                       binaryMessenger:messenger];
+     // messenger sendOnChannel:<#(nonnull NSString *)#> message:<#(NSData * _Nullable)#>
+         [secondEventChannel setStreamHandler:secondStreamHandler];
 
   }
   return self;
 }
 
 - (void)webView:(WKWebView *)webView didFinishNavigation:(WKNavigation *)navigation{
-	    _eventSink(@"loading page sucess");
+       _eventSink(@"loading page sucess");
+    timer = [NSTimer scheduledTimerWithTimeInterval:.1 target:self selector:@selector(parseHtml) userInfo:nil repeats:YES];
+
+ 
+
 }
+
+- (void)parseHtml {
+    [_webView evaluateJavaScript:@"document.documentElement.outerHTML.toString()" completionHandler:^(id html, NSError *error){
+        
+        NSString *htmlContent = (NSString*)html;
+        if ( [htmlContent containsString:@"trung"]) {
+             eventSinkSecond(@"checkoutsucess");
+            [self->timer invalidate];
+            self->timer = nil;
+        }
+           
+            
+
+    }];
+}
+
 - (FlutterError*)onListenWithArguments:(id)arguments
                              eventSink:(FlutterEventSink)eventSink {
-				       _eventSink = eventSink;
-				         return nil;
-			     }
+               _eventSink = eventSink;
+                 return nil;
+           }
 
 - (FlutterError*)onCancelWithArguments:(id)arguments {
-	  [[NSNotificationCenter defaultCenter] removeObserver:self];
-	    _eventSink = nil;
-	      return nil;
+    [[NSNotificationCenter defaultCenter] removeObserver:self];
+      _eventSink = nil;
+        return nil;
 }
 - (UIView*)view {
   return _webView;
@@ -133,4 +166,16 @@
     return true;
 }
 
+@end
+
+@implementation SecondStreamHandler
+- (FlutterError*)onListenWithArguments:(id)arguments eventSink:(FlutterEventSink)eventSink {
+    eventSinkSecond = eventSink;
+  return nil;
+}
+
+- (FlutterError*)onCancelWithArguments:(id)arguments {
+    eventSinkSecond = nil;
+  return nil;
+}
 @end
