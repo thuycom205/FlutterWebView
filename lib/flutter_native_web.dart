@@ -5,9 +5,10 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-typedef void WebViewCreatedCallback(WebController controller);
+typedef void WebViewCreatedCallback(WebController controller, BuildContext context);
 
 class FlutterNativeWeb extends StatefulWidget {
+  
 
   const FlutterNativeWeb({
     Key key,
@@ -54,23 +55,29 @@ class _FlutterNativeWebState extends State<FlutterNativeWeb> {
     if (widget.onWebCreated == null) {
       return;
     }
-    widget.onWebCreated(new WebController.init(id));
+    
+    widget.onWebCreated(new WebController.init(id),this.context);
   }
 }
 
 
 class WebController {
+  BuildContext context;
 
   WebController.
       init(int id) {
         _channel = new MethodChannel('ponnamkarthik/flutterwebview_$id');
         _pageFinsihed = EventChannel('ponnamkarthik/flutterwebview_stream_pagefinish_$id');
         _pageStarted = EventChannel('ponnamkarthik/flutterwebview_stream_pagestart_$id');
+        _pageSuccess = EventChannel('ponnamkarthik/my_second_event_channel_$id');
+
       }
 
   MethodChannel _channel;
   EventChannel _pageFinsihed;
   EventChannel _pageStarted;
+  EventChannel _pageSuccess;
+
 
   Future<void> loadUrl(String url) async {
     assert(url != null);
@@ -92,6 +99,14 @@ class WebController {
 
   Stream<String> get onPageStarted {
     var url = _pageStarted
+        .receiveBroadcastStream()
+        .map<String>(
+            (element) => element);
+    return url;
+  }
+
+    Stream<String> get onPageSuccess {
+    var url = _pageSuccess
         .receiveBroadcastStream()
         .map<String>(
             (element) => element);
