@@ -5,13 +5,15 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-typedef void WebViewCreatedCallback(WebController controller, BuildContext context);
+typedef void WebViewCreatedCallback(WebController controller, BuildContext context, String url);
 
 class FlutterNativeWeb extends StatefulWidget {
-  
+
+  final url;
 
   const FlutterNativeWeb({
     Key key,
+    this.url,
     @required this.onWebCreated,
     this.gestureRecognizers
   }) : super(key: key);
@@ -56,7 +58,7 @@ class _FlutterNativeWebState extends State<FlutterNativeWeb> {
       return;
     }
     
-    widget.onWebCreated(new WebController.init(id),this.context);
+    widget.onWebCreated(new WebController.init(id),this.context, widget.url);
   }
 }
 
