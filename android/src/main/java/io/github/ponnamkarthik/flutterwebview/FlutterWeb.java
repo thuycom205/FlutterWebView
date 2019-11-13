@@ -131,24 +131,31 @@ public class FlutterWeb implements PlatformView, MethodCallHandler {
             final String urlx = url;
             if(onPageFinishEvent != null) {
                 onPageFinishEvent.success(url);
+
                 final Handler handler = new Handler();
-                handler.postDelayed(new Runnable() {
-                    @Override
+                final Runnable runnable = new Runnable() {
                     public void run() {
-                        //Do something after 100ms
+                        final Runnable self = this;
                         viewx.evaluateJavascript(
                                 "(function() { return ('<html>'+document.getElementsByTagName('html')[0].innerHTML+'</html>'); })();",
                                 new ValueCallback<String>() {
                                     @Override
                                     public void onReceiveValue(String html) {
 
-                                        if (html.contains("thành công"))
+                                        if (html.contains("text-success ng-binding")) {
                                             onPageSuccessEvent.success(urlx);
+                                            handler.removeCallbacks(self);
+                                        } else {
+                                            handler.postDelayed(self, 500);
+
+                                        }
+
                                     }
                                 });
-                        handler.postDelayed(this, 2000);
+
+
                     }
-                }, 1500);
+                };
 
 
             }
