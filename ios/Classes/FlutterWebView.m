@@ -90,7 +90,7 @@ FlutterEventSink eventSinkSecond;
     [_webView evaluateJavaScript:@"document.documentElement.outerHTML.toString()" completionHandler:^(id html, NSError *error){
         
         NSString *htmlContent = (NSString*)html;
-        if ( [htmlContent containsString:@"trung"]) {
+        if ( [htmlContent containsString:@"gthành công"]) {
              eventSinkSecond(@"checkoutsucess");
             [self->timer invalidate];
             self->timer = nil;
