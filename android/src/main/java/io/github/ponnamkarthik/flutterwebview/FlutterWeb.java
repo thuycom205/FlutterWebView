@@ -102,8 +102,8 @@ public class FlutterWeb implements PlatformView, MethodCallHandler {
 
     private class CustomWebViewClient extends WebViewClient {
         public Handler handler  = null;
-        public  Runnable runn = null;
-        
+        final  Runnable runn = null;
+
         @SuppressWarnings("deprecated")
         @Override
         public boolean shouldOverrideUrlLoading(WebView wv, String url) {
@@ -127,33 +127,35 @@ public class FlutterWeb implements PlatformView, MethodCallHandler {
 
         @Override
         public void onPageFinished(WebView view, String url) {
+            final  WebView viewx = view;
+            final String urlx = url;
             if(onPageFinishEvent != null) {
                 onPageFinishEvent.success(url);
-               handler = new Handler();
-               runn = new Runnable(){
-               
-                   @Override
-                   public void run() {
-                       view.evaluateJavascript(
-                        "(function() { return ('<html>'+document.getElementsByTagName('html')[0].innerHTML+'</html>'); })();",
-                        new ValueCallback<String>() {
-                            @Override
-                            public void onReceiveValue(String html) {
-                                
-                                if (html.contains("thành công")) 
-                                onPageSuccessEvent.success(url);
-                            }
-                            });
-                       
-                   }
-               };
+                final Handler handler = new Handler();
+                handler.postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        //Do something after 100ms
+                        viewx.evaluateJavascript(
+                                "(function() { return ('<html>'+document.getElementsByTagName('html')[0].innerHTML+'</html>'); })();",
+                                new ValueCallback<String>() {
+                                    @Override
+                                    public void onReceiveValue(String html) {
 
-               handler.postDelayed(runn, 10000);
+                                        if (html.contains("thành công"))
+                                            onPageSuccessEvent.success(urlx);
+                                    }
+                                });
+                        handler.postDelayed(this, 2000);
+                    }
+                }, 1500);
+
+
             }
             super.onPageFinished(view, url);
         }
 
-        
+
     }
 
     @Override
