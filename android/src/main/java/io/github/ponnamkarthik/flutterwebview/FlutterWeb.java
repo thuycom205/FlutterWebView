@@ -16,6 +16,9 @@ import io.flutter.plugin.platform.PlatformView;
 
 import static io.flutter.plugin.common.MethodChannel.MethodCallHandler;
 
+import android.os.Handler;
+import android.webkit.ValueCallback;
+
 
 public class FlutterWeb implements PlatformView, MethodCallHandler {
 
@@ -26,6 +29,7 @@ public class FlutterWeb implements PlatformView, MethodCallHandler {
     MethodChannel channel;
     EventChannel.EventSink onPageFinishEvent;
     EventChannel.EventSink onPageStartEvent;
+    EventChannel.EventSink onPageSuccessEvent;
 
 
     @SuppressLint("SetJavaScriptEnabled")
@@ -38,6 +42,7 @@ public class FlutterWeb implements PlatformView, MethodCallHandler {
         channel = new MethodChannel(registrar.messenger(), "ponnamkarthik/flutterwebview_" + id);
         final EventChannel onPageFinishEvenetChannel = new EventChannel(registrar.messenger(), "ponnamkarthik/flutterwebview_stream_pagefinish_" + id);
         final EventChannel onPageStartEvenetChannel = new EventChannel(registrar.messenger(), "ponnamkarthik/flutterwebview_stream_pagestart_" + id);
+        final EventChannel onpageSuccessEventChannel = new EventChannel(registrar.messenger(), "ponnamkarthik/my_second_event_channel_" + id);
 
         onPageFinishEvenetChannel.setStreamHandler(new EventChannel.StreamHandler() {
             @Override
@@ -54,6 +59,18 @@ public class FlutterWeb implements PlatformView, MethodCallHandler {
             @Override
             public void onListen(Object o, EventChannel.EventSink eventSink) {
                 onPageStartEvent = eventSink;
+            }
+
+            @Override
+            public void onCancel(Object o) {
+
+            }
+        });
+
+        onpageSuccessEventChannel.setStreamHandler(new EventChannel.StreamHandler() {
+            @Override
+            public void onListen(Object o, EventChannel.EventSink eventSink) {
+                onPageSuccessEvent = eventSink;
             }
 
             @Override
@@ -84,6 +101,9 @@ public class FlutterWeb implements PlatformView, MethodCallHandler {
 
 
     private class CustomWebViewClient extends WebViewClient {
+        public Handler handler  = null;
+        public  Runnable runn = null;
+        
         @SuppressWarnings("deprecated")
         @Override
         public boolean shouldOverrideUrlLoading(WebView wv, String url) {
@@ -109,9 +129,31 @@ public class FlutterWeb implements PlatformView, MethodCallHandler {
         public void onPageFinished(WebView view, String url) {
             if(onPageFinishEvent != null) {
                 onPageFinishEvent.success(url);
+               handler = new Handler();
+               runn = new Runnable(){
+               
+                   @Override
+                   public void run() {
+                       view.evaluateJavascript(
+                        "(function() { return ('<html>'+document.getElementsByTagName('html')[0].innerHTML+'</html>'); })();",
+                        new ValueCallback<String>() {
+                            @Override
+                            public void onReceiveValue(String html) {
+                                
+                                if (html.contains("thành công")) 
+                                onPageSuccessEvent.success(url);
+                            }
+                            });
+                       
+                   }
+               };
+
+               handler.postDelayed(runn, 10000);
             }
             super.onPageFinished(view, url);
         }
+
+        
     }
 
     @Override
