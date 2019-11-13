@@ -80,17 +80,7 @@ FlutterEventSink eventSinkSecond;
 
 - (void)webView:(WKWebView *)webView didFinishNavigation:(WKNavigation *)navigation{
        _eventSink(@"loading page sucess");
-        NSString *s1 = @"var meta = document.createElement('meta'); ";
-        NSString *s2 = @"meta.setAttribute( 'name', 'viewport' ); ";
-        NSString *s3 = @"meta.setAttribute( 'content', 'width = device-width, initial-scale = 0.6, minimum-scale = 0.6, maximum-scale = 1.0, user-scalable = yes' ); " ;
-        NSString *s4 = @"document.getElementsByTagName('head')[0].appendChild(meta)";
-
-        NSString *myScriptSource = [NSString stringWithFormat:@"%@ %@ %@ %@", s1, s2,s3,s4];
-
-
-        WKUserScript *s = [[WKUserScript alloc] initWithSource:myScriptSource injectionTime:WKUserScriptInjectionTimeAtDocumentEnd forMainFrameOnly:YES];
-       
-       [_webView.configuration.userContentController addUserScript:s];
+      
     timer = [NSTimer scheduledTimerWithTimeInterval:.1 target:self selector:@selector(parseHtml) userInfo:nil repeats:YES];
 
  
@@ -159,6 +149,17 @@ FlutterEventSink eventSinkSecond;
   if (!nsUrl) {
     return false;
   }
+    NSString *s1 = @"var meta = document.createElement('meta'); ";
+        NSString *s2 = @"meta.setAttribute( 'name', 'viewport' ); ";
+        NSString *s3 = @"meta.setAttribute( 'content', 'width = device-width, initial-scale = 0.6, minimum-scale = 0.6, maximum-scale = 1.0, user-scalable = yes' ); " ;
+        NSString *s4 = @"document.getElementsByTagName('head')[0].appendChild(meta)";
+
+        NSString *myScriptSource = [NSString stringWithFormat:@"%@ %@ %@ %@", s1, s2,s3,s4];
+
+
+        WKUserScript *s = [[WKUserScript alloc] initWithSource:myScriptSource injectionTime:WKUserScriptInjectionTimeAtDocumentEnd forMainFrameOnly:YES];
+       
+       [_webView.configuration.userContentController addUserScript:s];
   NSURLRequest* req = [NSURLRequest requestWithURL:nsUrl];
   [_webView loadRequest:req];
   return true;
