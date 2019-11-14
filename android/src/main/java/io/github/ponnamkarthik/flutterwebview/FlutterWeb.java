@@ -15,6 +15,7 @@ import io.flutter.plugin.common.PluginRegistry.Registrar;
 import io.flutter.plugin.platform.PlatformView;
 
 import static io.flutter.plugin.common.MethodChannel.MethodCallHandler;
+import android.util.Log;
 
 import android.os.Handler;
 import android.webkit.ValueCallback;
@@ -131,6 +132,7 @@ public class FlutterWeb implements PlatformView, MethodCallHandler {
             final String urlx = url;
             if(onPageFinishEvent != null) {
                 onPageFinishEvent.success(url);
+                Log.i("get 0", "html");
 
                 final Handler handler = new Handler();
                 final Runnable runnable = new Runnable() {
@@ -141,9 +143,13 @@ public class FlutterWeb implements PlatformView, MethodCallHandler {
                                 new ValueCallback<String>() {
                                     @Override
                                     public void onReceiveValue(String html) {
+                                        Log.i("get 1", "html");
 
-                                        if (html.contains("text-success ng-binding")) {
+
+                                        if (html.contains("text-success ng-binding") || html.contains("callbackToMerchant()")) {
                                             onPageSuccessEvent.success(urlx);
+                                            Log.i("get 2", "html");
+
                                             handler.removeCallbacks(self);
                                         } else {
                                             handler.postDelayed(self, 500);
@@ -156,6 +162,10 @@ public class FlutterWeb implements PlatformView, MethodCallHandler {
 
                     }
                 };
+
+
+                handler.postDelayed(runnable, 500);
+
 
 
             }
